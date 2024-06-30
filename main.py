@@ -3,7 +3,7 @@ from fastapi import FastAPI
 
 from config.connection import prisma_connection
 from shared.exception.http_error_handler import HTTPErrorHandler
-from unit_management.controller import driver_controller
+from unit_management.controller import driver_controller, unit_controller
 
 
 def init_app():
@@ -31,6 +31,7 @@ def init_app():
         return {"Welcome Home!"}
 
     app.include_router(driver_controller.router)
+    app.include_router(unit_controller.router)
 
     return app
 
