@@ -3,14 +3,12 @@ from pydantic import BaseModel
 
 class CreateCameraModel(BaseModel):
     name: str
-    last_name: str
-    dni: int
-    image: str
+    location: str
+    unitId: int
 
 
 class CameraModel(BaseModel):
     id: int
     name: str
-    last_name: str
-    dni: int
-    image: str
+    location: str
+    unitId: int
