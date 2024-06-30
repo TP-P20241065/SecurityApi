@@ -3,7 +3,7 @@ from unit_management.model.camera import CreateCameraModel
 from unit_management.repository.camera_repository import CameraRepository
 
 
-class UnitService:
+class CameraService:
 
     @staticmethod
     async def get_all():
