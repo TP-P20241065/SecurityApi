@@ -5,7 +5,7 @@ from unit_management.model.camera import CreateCameraModel
 class CameraRepository:
     @staticmethod
     async def get_all():
-        result = await prisma_connection.prisma.camera.find_many()
+        return await prisma_connection.prisma.camera.find_many()
 
     @staticmethod
     async def get_by_id(camera_id: int):

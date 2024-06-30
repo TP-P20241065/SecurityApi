@@ -6,7 +6,7 @@ from report_management.model.report import CreateReportModel
 class ReportRepository:
     @staticmethod
     async def get_all():
-        result = await prisma_connection.prisma.report.find_many()
+        return await prisma_connection.prisma.report.find_many()
 
     @staticmethod
     async def get_by_id(report_id: int):
