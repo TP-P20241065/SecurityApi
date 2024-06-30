@@ -3,7 +3,7 @@ from typing import Dict
 from unit_management.model.driver import CreateDriverModel
 from config.connection import prisma_connection
 
-
+# solo mantiene comuniacion con la base de datos
 class DriverRepository:
 
     @staticmethod
