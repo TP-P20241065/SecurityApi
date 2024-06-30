@@ -16,8 +16,8 @@ class DriverRepository:
         return await prisma_connection.prisma.driver.find_first(where={"id": driver_id})
 
     @staticmethod
-    async def get_filtered(_name: str):
-        record = await prisma_connection.prisma.driver.find_many(where={"name": _name})
+    async def get_filtered(_car_plate: str):
+        record = await prisma_connection.prisma.driver.find_many(where={"car_plate": _car_plate})
         # print(f"Record retrieved: {record}")  # Add console logging with f-string
         return record
 

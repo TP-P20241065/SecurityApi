@@ -10,7 +10,7 @@ class UnitRepository:
 
     @staticmethod
     async def get_by_id(unit_id: int):
-        return await prisma_connection.prisma.unit.find_first(where={"id": driver_id})
+        return await prisma_connection.prisma.unit.find_first(where={"id": unit_id})
 
     @staticmethod
     async def get_filtered(_name: str):
