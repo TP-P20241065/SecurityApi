@@ -2,16 +2,13 @@ from pydantic import BaseModel
 
 
 class CreateUnitModel(BaseModel):
-    name: str
-    last_name: str
-    dni: int
-    image: str
+    car_plate: str
+    driver_id: str
 
 
 class UnitModel(BaseModel):
     id: int
-    name: str
-    last_name: str
-    dni: int
-    image: str
+    car_plate: str
+    driver_id: str
+
 
