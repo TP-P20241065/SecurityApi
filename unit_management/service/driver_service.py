@@ -1,3 +1,5 @@
+from typing import Dict
+
 from unit_management.model.driver import CreateDriverModel
 from unit_management.repository.driver_repository import DriverRepository
 
@@ -13,8 +15,8 @@ class DriverService:
         return await DriverRepository.get_by_id(driver_id)
 
     @staticmethod
-    async def get_by_name(name: str):
-        return await DriverRepository.get_by_name(name)
+    async def get_filtered(name: str):
+        return await DriverRepository.get_filtered(name)
 
     @staticmethod
     async def create(data: CreateDriverModel):

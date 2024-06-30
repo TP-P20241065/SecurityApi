@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Path
+from typing import Optional, Dict, Any
+
+from fastapi import APIRouter, Path, Body, Query
 
 from shared.response.schema import ResponseSchema
 from unit_management.model.driver import CreateDriverModel
@@ -17,21 +19,26 @@ async def get_all_driver():
     return ResponseSchema(detail="Successfully get all data!", result=result)
 
 
+# Ruta para obtener un driver por ID
 @router.get("/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
-async def get_driver_by_id(driver_id: int = Path(..., alias="id")):
-    result = await DriverService.get_by_id(driver_id)
-    return ResponseSchema(detail="Successfully get driver by id!", result=result)
+async def get_driver_by_id(id: int):
+    result = await DriverService.get_by_id(id)
+    return ResponseSchema(detail="Successfully got driver by ID!", result=result)
 
 
-@router.get("/{name}", response_model=ResponseSchema, response_model_exclude_none=True)
-async def get_driver_by_name(name: str = Path(..., alias="name")):
-    result = await DriverService.get_by_name(name)
-    return ResponseSchema(detail="Successfully get driver by name!", result=result)
+# Ruta para filtrar drivers
+@router.get("/", response_model=ResponseSchema, response_model_exclude_none=True)
+async def get_filtered_drivers(name: Optional[str]):
+    if name:
+        result = await DriverService.get_filtered(name)
+        return ResponseSchema(detail="Successfully got filtered data!", result=result)
+    else:
+        return ResponseSchema(detail="Please provide attributes for search.", result=None)
 
 
 @router.put("/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
-async def update_driver(driver_id: int = Path(..., alias="id"), update_data=CreateDriverModel):
-    result = await DriverService.update(driver_id, update_data)
+async def update_driver(driver_id: int = Path(..., alias="id"), *, updateDrive: CreateDriverModel):
+    result = await DriverService.update(driver_id, updateDrive)
     return ResponseSchema(detail="Successfully update driver!", result=result)
 
 
