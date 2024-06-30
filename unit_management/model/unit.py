@@ -2,13 +2,11 @@ from pydantic import BaseModel
 
 
 class CreateUnitModel(BaseModel):
-    car_plate: str
-    driver_id: str
+    carPlate: str
+    driverId: int
 
 
 class UnitModel(BaseModel):
     id: int
-    car_plate: str
-    driver_id: str
-
-
+    carPlate: str
+    driverId: int

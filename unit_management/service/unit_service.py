@@ -44,16 +44,16 @@ class UnitService:
             return ResponseSchema(detail="Failed to create unit!", result=None)
 
     @staticmethod
-    async def update(user_id: int, data: CreateUnitModel):
+    async def update(unit_id: int, data: CreateUnitModel):
         try:
-            result = await UnitRepository.update(user_id, data)
+            result = await UnitRepository.update(unit_id, data)
             if result:
                 return ResponseSchema(detail="Successfully update unit!", result=result)
             else:
                 return ResponseSchema(detail="Unit not found.", result=None)
         except Exception as e:
             print(f"Error updating unit by ID: {e}")
-            return ResponseSchema(detail=f"An error occurred: {e}", result=None)
+            return ResponseSchema(detail=f"An error occurred: {e} : no existe el driverId", result=None)
 
     @staticmethod
     async def delete_by_id(user_id: int):

@@ -29,7 +29,7 @@ model Unit {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   carPlate  String   @map("car_plate") @db.VarChar(10)
-  driverId  Int      @map("driver_id")
+  driverId  Int      @map("driver_id") @unique
   driver    Driver   @relation(fields: [driverId], references: [id])
   cameras   Camera[]
   reports   Report[]
