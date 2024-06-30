@@ -40,4 +40,4 @@ class DriverRepository:
 
     @staticmethod
     async def delete(driver_id: int):
-        return await prisma_connection.prisma.driver.delete(driver_id)
+        return await prisma_connection.prisma.driver.delete(where={"id": driver_id})
