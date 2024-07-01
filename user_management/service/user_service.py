@@ -1,20 +1,19 @@
-
-
+from security.service.auth_service import AuthService
 from shared.message.message_service import send_email, send_mms
 from shared.response.schema import ResponseSchema
 from user_management.model.user import CreateUserModelV2
 from user_management.repository.user_repository import UserRepository
-from security.service.security_service import generate_password
+
 
 
 class UserService:
 
-
     @staticmethod
     async def create(data: CreateUserModelV2):
-        password = generate_password()
-        result = await UserRepository.create(data, password)
-        message = send_email(data.email, data.email, password)
+        password = AuthService.generate_password()
+        hash_password = AuthService.hash_password(password)
+        result = await UserRepository.create(data, hash_password)
+        message = send_email(data.email, data.firstName, password)
         await send_mms(message)
         if result:
             return ResponseSchema(detail="Successfully create user!", result=result)

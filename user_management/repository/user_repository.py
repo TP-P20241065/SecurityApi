@@ -28,6 +28,10 @@ class UserRepository:
         return await prisma_connection.prisma.user.find_first(where={"id": user_id})
 
     @staticmethod
+    async def get_by_email(email: str):
+        return await prisma_connection.prisma.user.find_first(where={"email": email})
+
+    @staticmethod
     async def get_filtered(isActive: bool):
         record = await prisma_connection.prisma.user.find_many(where={"isActive": isActive})
         # print(f"Record retrieved: {record}")  # Add console logging with f-string
@@ -47,3 +51,16 @@ class UserRepository:
     @staticmethod
     async def delete(user_id: int):
         return await prisma_connection.prisma.user.delete(where={"id": user_id})
+
+    @staticmethod
+    async def get_user(email: str):
+        result = await prisma_connection.prisma.user.find_first(where={"email": email})
+        # print(f"Record retrieved: {record}")  # Add console logging with f-string
+        return result
+
+    @staticmethod
+    async def change_password(email: str, hashedPassword: str) -> str:
+        await prisma_connection.prisma.user.update(
+            where={"email": email},
+            data={"hashedPassword": hashedPassword})
+        return "Change Password ok!"
