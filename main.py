@@ -1,8 +1,12 @@
+import os
+
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 
 from config.connection import prisma_connection
 from report_management.controller import report_controller
+from security.controller import auth_controller
 from shared.exception.http_error_handler import HTTPErrorHandler
 from unit_management.controller import driver_controller, unit_controller, camera_controller
 from user_management.controller import user_controller
@@ -30,13 +34,17 @@ def init_app():
 
     @app.get("/")
     def home():
-        return {"Welcome Home!"}
+        file_path = os.path.join(os.getcwd(), 'shared', 'presentation', 'presentation.html')
+        with open(file_path, 'r', encoding='utf-8') as file:
+            html_content = file.read()
+            return HTMLResponse(content=html_content)
 
     app.include_router(driver_controller.router)
     app.include_router(unit_controller.router)
     app.include_router(camera_controller.router)
     app.include_router(report_controller.router)
     app.include_router(user_controller.router)
+    app.include_router(auth_controller.router)
 
     return app
 
