@@ -5,6 +5,7 @@ from config.connection import prisma_connection
 from report_management.controller import report_controller
 from shared.exception.http_error_handler import HTTPErrorHandler
 from unit_management.controller import driver_controller, unit_controller, camera_controller
+from user_management.controller import user_controller
 
 
 def init_app():
@@ -35,6 +36,7 @@ def init_app():
     app.include_router(unit_controller.router)
     app.include_router(camera_controller.router)
     app.include_router(report_controller.router)
+    app.include_router(user_controller.router)
 
     return app
 
