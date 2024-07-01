@@ -1,66 +1,46 @@
-from typing import List
+from typing import Optional, Dict, Any, List
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
-from starlette.status import HTTP_404_NOT_FOUND
+from fastapi import APIRouter, Path, Body, Query
+from shared.response.schema import ResponseSchema
+from user_management.model.user import CreateUserModelV2, UserModel
+from user_management.service.user_service import UserService
 
-from user_management.domain.user import User
-from user_management.resource.new_user import NewUserResource
-
-# Ejemplos de usuarios en formato JSON
-example_users = [
-    {
-        "id": 1,
-        "username": "john_doe",
-        "firstName": "John",
-        "lastName": "Doe",
-        "email": "john.doe@example.com",
-        "headquarter": 123,
-        "permissions": [1, 2, 3],
-        "is_active": True,
-        "created_at": "2024-06-29T15:30:00Z",
-        "updated_at": "2024-06-29T15:30:00Z"
-    },
-    {
-        "id": 2,
-        "username": "marco_bka",
-        "firstName": "Marco",
-        "lastName": "Bka",
-        "email": "marco.bka@example.com",
-        "headquarter": 123,
-        "permissions": [1, 2, 3],
-        "is_active": True,
-        "created_at": "2024-06-29T15:30:00Z",
-        "updated_at": "2024-06-29T15:30:00Z"
-    }
-]
-
-# Lista de usuarios inicial vacía
-users = example_users.copy()
-
-class UserController:
-    def __init__(self):
-        self.router = APIRouter()
-        self.router.add_api_route("/users/", self.create_user, methods=["POST"])
-        """self.router.add_api_route("/users/{user_id}", self.get_user, methods=["GET"])
-        self.router.add_api_route("/users/", self.get_all_users, methods=["GET"])
-        self.router.add_api_route("/users/{user_id}", self.update_user, methods=["PUT"])
-        self.router.add_api_route("/users/{user_id}", self.delete_user, methods=["DELETE"]) """
-
-    async def create_user(self, user: NewUserResource):
-        new_user = User(
-            id=len(users) + 1,
-            username=user.username,
-            firstName=user.firstName,
-            lastName=user.lastName,
-            email=user.email,
-            headquarter=user.headquarter,
-            permissions=user.permissions,
-            is_active=user.is_active
-        )
-
-        example_users.append(new_user.dict())
-        return example_users
+router = APIRouter(
+    prefix="/user",
+    tags=["user"], )
 
 
+@router.post("", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
+async def create_user(create_data: CreateUserModelV2):
+    result = await UserService.create(create_data)
+    return result
+
+
+@router.get("", response_model=ResponseSchema[List[UserModel]], response_model_exclude_none=True)
+async def get_all_users():
+    result = await UserService.get_all()
+    return result
+
+
+@router.get("/{id}", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
+async def get_user_by_id(id: int):
+    result = await UserService.get_by_id(id)
+    return result
+
+
+@router.get("/", response_model=ResponseSchema[List[UserModel]], response_model_exclude_none=True)
+async def get_users_is_active(isActive: Optional[bool] = Query(None)):
+    result = await UserService.get_filtered(isActive)
+    return result
+
+
+@router.put("/{id}", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
+async def update_user(user_id: int = Path(..., alias="id"), *, updateUser: CreateUserModelV2):
+    result = await UserService.update(user_id, updateUser)
+    return result
+
+
+@router.delete("/{id}", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
+async def delete_user(user_id: int = Path(..., alias="id")):
+    result = await UserService.delete_by_id(user_id)
+    return result
