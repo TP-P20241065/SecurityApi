@@ -25,7 +25,7 @@ class DriverRepository:
     async def create(driver: CreateDriverModel):
         return await prisma_connection.prisma.driver.create({
             'name': driver.name,
-            'lastName': driver.last_name,
+            'lastName': driver.lastName,
             'dni': driver.dni,
             'image': driver.image
         })
@@ -34,7 +34,7 @@ class DriverRepository:
     async def update(driver_id: int, driver: CreateDriverModel):
         return await prisma_connection.prisma.driver.update(where={"id": driver_id}, data={
             'name': driver.name,
-            'lastName': driver.last_name,
+            'lastName': driver.lastName,
             'dni': driver.dni,
             'image': driver.image
         })

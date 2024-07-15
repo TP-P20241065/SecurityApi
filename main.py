@@ -2,6 +2,7 @@ import os
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
 from config.connection import prisma_connection
@@ -18,6 +19,16 @@ def init_app():
         description="FastAPI Prisma",
         version="1.0.0",
     )
+
+    # Configuración del CORS
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # Permite todas las origenes
+        allow_credentials=True,
+        allow_methods=["*"],  # Permite todos los métodos
+        allow_headers=["*"],  # Permite todos los headers
+    )
+
     app.add_middleware(HTTPErrorHandler)
 
     # app.include_router(prefix="/drivers", tags=["Drivers"], router=driver_router)
