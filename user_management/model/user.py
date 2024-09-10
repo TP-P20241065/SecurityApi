@@ -10,6 +10,7 @@ class CreateUserModelV2(BaseModel):
     email: str = Field(default='correo@mail.com')
     headquarter: int
     permissions: List[int]
+    dni: int
 
 
 class UserModel(BaseModel):
@@ -22,3 +23,4 @@ class UserModel(BaseModel):
     email: str
     headquarter: int
     permissions: List[int]
+    dni: int

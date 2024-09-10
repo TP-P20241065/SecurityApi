@@ -23,9 +23,9 @@ async def login(login: Register):
             token = await AuthService.create_access_token(user)
             return token
         else:
-            raise HTTPException(status_code=401, detail="Contraseña o Correo electrónico incorrecta")
+            raise HTTPException(status_code=400, detail= "Contraseña o Correo electrónico incorrecta")
     else:
-        raise HTTPException(status_code=401, detail="Correo electrónico no registrado")
+        raise HTTPException(status_code=400, detail="Correo electrónico no registrado")
 
 
 @router.patch("/reset-password", response_model=ResponseSchema)
@@ -34,4 +34,4 @@ async def reset_password(email: str):
         result = await AuthService.change_password_by_email(email)
         return result
     else:
-        return ResponseSchema(details="Email not existed", result=None)
+        raise HTTPException(status_code=400, detail="Email not existed")

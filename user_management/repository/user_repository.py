@@ -16,12 +16,16 @@ class UserRepository:
             'email': user.email,
             'headquarter': user.headquarter,
             'permissions': json.dumps(user.permissions),
-            'hashedPassword': password
+            'hashedPassword': password,
+            'dni': user.dni
         })
 
     @staticmethod
     async def get_all():
-        return await prisma_connection.prisma.user.find_many()
+        try:
+            return await prisma_connection.prisma.user.find_many()
+        except Exception as e:
+            print(f"Error retrieving user by ID: {e}")
 
     @staticmethod
     async def get_by_id(user_id: int):
@@ -45,7 +49,8 @@ class UserRepository:
             'lastName': user.lastName,
             'email': user.email,
             'headquarter': user.headquarter,
-            'permissions': json.dumps(user.permissions)
+            'permissions': json.dumps(user.permissions),
+            'dni': user.dni
         })
 
     @staticmethod
