@@ -1,0 +1,7 @@
+prisma~=0.15.0
+pydantic~=2.7.2
+fastapi~=0.110.3
+starlette~=0.37.2
+uvicorn~=0.30.1
+PyJWT~=2.8.0
+passlib~=1.7.4
