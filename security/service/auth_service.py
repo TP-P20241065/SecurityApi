@@ -25,11 +25,13 @@ class AuthService:
     @staticmethod
     def generate_password() -> str:
         password_length = 12
-        characters = string.ascii_letters + string.digits + string.punctuation
+        # Excluir comillas dobles (") y barra invertida (\) de string.punctuation
+        allowed_punctuation = string.punctuation.replace('"', '').replace('\\', '')
+        characters = string.ascii_letters + string.digits + allowed_punctuation
         password = ""
         for index in range(password_length):
-            password = password + random.choice(characters)
-        return str(password)
+            password += random.choice(characters)
+        return password
 
     @staticmethod
     async def create_access_token(data: any, expires_delta: timedelta = None) -> TokenModel:
