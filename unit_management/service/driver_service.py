@@ -11,9 +11,9 @@ class DriverService:
     async def get_all():
         result = await DriverRepository.get_all()
         if result:
-            return ResponseSchema(detail="Successfully get all data!", result=result)
+            return ResponseSchema(detail="Data successfully obtained!", result=result)
         else:
-            ResponseSchema(detail="Please get all data not found!", result=result)
+            ResponseSchema(detail="Data successfully obtained!", result=result)
 
     @staticmethod
     async def get_by_id(driver_id: int):

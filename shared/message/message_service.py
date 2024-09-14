@@ -1,5 +1,4 @@
 import os
-
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 
 conf = ConnectionConfig(
@@ -25,6 +24,23 @@ def send_email(email, first_name, password):
         recipients=[email],
         body="Hola " + str(first_name) + ", esta es su contraseña generada de su cuenta de ZuriCam:\n\n" + str(
             password),
+        subtype="html"
+    )
+    return message
+
+def send_alert(address, incident, tracking_link, image, unit_id):
+    email = os.getenv("AUTHORITIES_EMAIL")
+    if incident == 'Botón de pánico':
+        email = os.getenv("SECURITY_EMAIL"),
+
+    message = MessageSchema(
+        subject="Botón de pánico",
+        recipients=[email],
+        body="Incidencia: " + str(incident) + "\r\r\n"
+        + "Dirección: " + str(address) + "\r\r\n"
+        + "Imagen de rastreo: " + str(tracking_link) + "\r\r\n"
+        + "Unidad: " + str(unit_id) + "\r\r\n"
+        + "Imagen:\r\r\n" + str(image),
         subtype="html"
     )
     return message

@@ -10,9 +10,9 @@ class CameraService:
         try:
             result = await CameraRepository.get_all()
             if result:
-                return ResponseSchema(detail="Successfully get all data!", result=result)
+                return ResponseSchema(detail="Data successfully obtained!", result=result)
             else:
-                ResponseSchema(detail="Please get all data not found!", result=result)
+                ResponseSchema(detail="Data successfully obtained!", result=result)
         except Exception as e:  # Catch any exception
             print(f"Error retrieving camera by ID: {e}")  # Log the error
             return ResponseSchema(detail=f"An error occurred: {e}  (esta vacio)", result=None)

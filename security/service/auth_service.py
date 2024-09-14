@@ -12,7 +12,7 @@ from user_management.repository.user_repository import UserRepository
 
 class AuthService:
     pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
-    secret_key = "tu_clave_secreta_aqui"  # Deberías manejar la clave secreta de forma segura en un entorno real
+    secret_key = "tu_clave_secreta_aqui"
 
     @staticmethod
     def hash_password(password: str) -> str:
@@ -85,9 +85,9 @@ class AuthService:
             if result:
                 message = send_email(user.email, user.firstName, password)
                 await send_mms(message)
-                return ResponseSchema(detail="Successfully!", result=result)
+                return ResponseSchema(detail="Success!", result=result)
             else:
-                return ResponseSchema(detail="Not change password", result=None)
+                return ResponseSchema(detail="Password not changed.", result=None)
         except Exception as e:
             print(f"Error change password: {e}")
             return ResponseSchema(detail=f"An error occurred: {e} : authService", result=None)
