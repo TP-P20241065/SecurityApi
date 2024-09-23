@@ -69,5 +69,5 @@ app = init_app()
 
 
 # Punto de entrada principal
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="localhost", port=8000, reload=True)
+#if __name__ == "__main__":
+#    uvicorn.run("main:app", host="localhost", port=8000, reload=True)
