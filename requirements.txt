@@ -1,4 +1,4 @@
-prisma~=0.15.0
+prisma
 pydantic~=2.7.2
 fastapi~=0.110.3
 starlette~=0.37.2
