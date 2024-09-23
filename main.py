@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
@@ -33,13 +34,15 @@ def init_app():
 
     # app.include_router(prefix="/drivers", tags=["Drivers"], router=driver_router)
 
-    @app.on_event("startup")
-    async def startup():
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        # Código que se ejecuta al iniciar el servidor
         print("Start Server")
         await prisma_connection.connect()
 
-    @app.on_event("shutdown")
-    async def shutdown():
+        yield  # Esto indica el momento en el que la app está corriendo
+
+        # Código que se ejecuta al detener el servidor
         print("Stop Server")
         await prisma_connection.disconnect()
 
