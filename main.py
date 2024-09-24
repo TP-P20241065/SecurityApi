@@ -14,37 +14,35 @@ from unit_management.controller import driver_controller, unit_controller, camer
 from user_management.controller import user_controller
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Start Server")
+    await prisma_connection.connect()
+
+    yield
+
+    print("Stop Server")
+    await prisma_connection.disconnect()
+
+
 def init_app():
     app = FastAPI(
         title="Security System",
         description="FastAPI Prisma",
         version="1.0.0",
+        lifespan=lifespan
     )
 
     # Configuración del CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Permite todas las origenes
+        allow_origins=["*"],
         allow_credentials=True,
-        allow_methods=["*"],  # Permite todos los métodos
-        allow_headers=["*"],  # Permite todos los headers
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     app.add_middleware(HTTPErrorHandler)
-
-    # app.include_router(prefix="/drivers", tags=["Drivers"], router=driver_router)
-
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
-        # Código que se ejecuta al iniciar el servidor
-        print("Start Server")
-        await prisma_connection.connect()
-
-        yield  # Esto indica el momento en el que la app está corriendo
-
-        # Código que se ejecuta al detener el servidor
-        print("Stop Server")
-        await prisma_connection.disconnect()
 
     @app.get("/")
     def home():
@@ -65,9 +63,7 @@ def init_app():
 
 app = init_app()
 
-# Registrar los routers
-
-
 # Punto de entrada principal
 if __name__ == "__main__":
     uvicorn.run("main:app", host="localhost", port=8000, reload=True)
+

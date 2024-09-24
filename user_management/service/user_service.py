@@ -16,7 +16,7 @@ class UserService:
         message = send_email(data.email, data.firstName, password)
         await send_mms(message)
         if result:
-            return ResponseSchema(detail="Successfully create user!", result=result)
+            return ResponseSchema(detail="User successfully created!", result=result)
         else:
             return ResponseSchema(detail="Failed to create user!", result=None)
 
