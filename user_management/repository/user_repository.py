@@ -54,6 +54,16 @@ class UserRepository:
         })
 
     @staticmethod
+    async def change_user_status(user_id: int):
+        user = await prisma_connection.prisma.user.find_unique(where={"id": user_id})
+        new_status = 0 if user.isActive else 1
+
+        return await prisma_connection.prisma.user.update(
+            where={"id": user_id},
+            data={'isActive': new_status}
+        )
+
+    @staticmethod
     async def delete(user_id: int):
         return await prisma_connection.prisma.user.delete(where={"id": user_id})
 

@@ -39,6 +39,11 @@ async def update_user(user_id: int = Path(..., alias="id"), *, updateUser: Creat
     result = await UserService.update(user_id, updateUser)
     return result
 
+@router.patch("/{id}", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
+async def update_user_status(user_id: int = Path(..., alias="id")):
+    result = await UserService.change_status(user_id)
+    return result
+
 
 @router.delete("/{id}", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
 async def delete_user(user_id: int = Path(..., alias="id")):

@@ -11,6 +11,7 @@ class CreateUserModelV2(BaseModel):
     headquarter: int
     permissions: List[int]
     dni: int
+    isActive: bool
 
 
 class UserModel(BaseModel):
@@ -24,3 +25,4 @@ class UserModel(BaseModel):
     headquarter: int
     permissions: List[int]
     dni: int
+    isActive: bool

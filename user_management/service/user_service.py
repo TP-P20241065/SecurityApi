@@ -57,7 +57,19 @@ class UserService:
         try:
             result = await UserRepository.update(user_id, data)
             if result:
-                return ResponseSchema(detail="Successfully update user!", result=result)
+                return ResponseSchema(detail="User successfully updated!", result=result)
+            else:
+                return ResponseSchema(detail="user not found.", result=None)
+        except Exception as e:
+            print(f"Error updating user by ID: {e}")
+            return ResponseSchema(detail=f"An error occurred: {e} : no existe el userId", result=None)
+
+    @staticmethod
+    async def change_status(user_id: int):
+        try:
+            result = await UserRepository.change_user_status(user_id)
+            if result:
+                return ResponseSchema(detail="User successfully updated!", result=result)
             else:
                 return ResponseSchema(detail="user not found.", result=None)
         except Exception as e:
@@ -68,6 +80,6 @@ class UserService:
     async def delete_by_id(user_id: int):
         result = await UserRepository.delete(user_id)
         if result:
-            return ResponseSchema(detail="Successfully delete user!", result=result)
+            return ResponseSchema(detail="User successfully deleted!", result=result)
         else:
             return ResponseSchema(detail="User not found.", result=None)
