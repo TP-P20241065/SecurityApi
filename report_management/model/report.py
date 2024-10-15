@@ -5,7 +5,7 @@ class CreateReportModel(BaseModel):
     address: str
     incident: str
     trackingLink: str
-    image: str
+    image: bytes
     unitId: int
 
 
@@ -14,5 +14,5 @@ class ReportModel(BaseModel):
     address: str
     incident: str
     trackingLink: str
-    image: str
+    image: bytes
     unitId: int

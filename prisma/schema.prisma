@@ -43,7 +43,7 @@ model Driver {
   name      String   @db.VarChar(100)
   lastName  String   @map("last_name") @db.VarChar(100)
   dni       Int
-  image     String?  @db.VarChar(255)
+  image     Bytes?   @db.ByteA
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   units     Unit[]
@@ -59,6 +59,7 @@ model Camera {
   location  String?  @db.VarChar(255)
   unitId    Int?     @map("unit_id")
   unit      Unit?    @relation(fields: [unitId], references: [id])
+  url       String?  @db.Text
 
   @@map("cameras")
 }
@@ -69,8 +70,8 @@ model Report {
   updatedAt    DateTime @updatedAt @map("updated_at")
   address      String?  @db.VarChar(255)
   incident     String?  @db.VarChar(255)
-  trackingLink String?  @map("tracking_link") @db.VarChar(255)
-  image        String   @db.VarChar(255)
+  trackingLink String?  @map("tracking_link") @db.Text
+  image        Bytes?   @db.ByteA
   unitId       Int?     @map("unit_id")
   unit         Unit?    @relation(fields: [unitId], references: [id])
 
