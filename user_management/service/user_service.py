@@ -69,9 +69,9 @@ class UserService:
         try:
             result = await UserRepository.change_user_status(user_id)
             if result:
-                return ResponseSchema(detail="User successfully updated!", result=result)
+                return ResponseSchema(detail="Status successfully updated!", result=result)
             else:
-                return ResponseSchema(detail="user not found.", result=None)
+                return ResponseSchema(detail="Error", result=None)
         except Exception as e:
             print(f"Error updating user by ID: {e}")
             return ResponseSchema(detail=f"An error occurred: {e} : no existe el userId", result=None)
