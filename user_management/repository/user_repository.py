@@ -36,6 +36,14 @@ class UserRepository:
         return await prisma_connection.prisma.user.find_first(where={"email": email})
 
     @staticmethod
+    async def get_user_by_dni(dni: int):
+        return await prisma_connection.prisma.user.find_first(where={"dni": dni})
+
+    @staticmethod
+    async def get_user_by_username(username: str):
+        return await prisma_connection.prisma.user.find_first(where={"username": username})
+
+    @staticmethod
     async def get_filtered(isActive: bool):
         record = await prisma_connection.prisma.user.find_many(where={"isActive": isActive})
         # print(f"Record retrieved: {record}")  # Add console logging with f-string

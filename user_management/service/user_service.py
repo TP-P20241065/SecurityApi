@@ -3,6 +3,7 @@ from shared.message.message_service import send_email, send_mms
 from shared.response.schema import ResponseSchema
 from user_management.model.user import CreateUserModelV2
 from user_management.repository.user_repository import UserRepository
+import asyncio
 
 
 
@@ -10,6 +11,20 @@ class UserService:
 
     @staticmethod
     async def create(data: CreateUserModelV2):
+
+        existing_email, existing_username, existing_dni = await asyncio.gather(
+            UserRepository.get_by_email(data.email),
+            UserRepository.get_user_by_username(data.username),
+            UserRepository.get_user_by_dni(data.dni)
+        )
+
+        if existing_email:
+            raise ValueError(f'Email: {data.email} already registered')
+        if existing_username:
+            raise ValueError(f'Username: {data.username} already registered')
+        if existing_dni:
+            raise ValueError(f'Dni: {data.dni} already registered')
+
         password = AuthService.generate_password()
         hash_password = AuthService.hash_password(password)
         result = await UserRepository.create(data, hash_password)
