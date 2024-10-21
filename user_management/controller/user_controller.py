@@ -40,10 +40,10 @@ async def update_user(user_id: int = Path(..., alias="id"), *, updateUser: Creat
     return result
 
 @router.patch("/{id}", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
-async def update_user_status(user_id: int = Path(..., alias="id")):
-    result = await UserService.change_status(user_id)
+async def change_user_password(user_id: int):
+    user_data = await get_user_by_id(user_id)
+    result = await UserService.change_user_password(user_id, user_data.result)
     return result
-
 
 @router.delete("/{id}", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
 async def delete_user(user_id: int = Path(..., alias="id")):

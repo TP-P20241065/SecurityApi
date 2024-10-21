@@ -1,7 +1,7 @@
 from security.service.auth_service import AuthService
 from shared.message.message_service import send_email, send_mms
 from shared.response.schema import ResponseSchema
-from user_management.model.user import CreateUserModelV2
+from user_management.model.user import CreateUserModelV2, UserModel
 from user_management.repository.user_repository import UserRepository
 
 
@@ -65,16 +65,21 @@ class UserService:
             return ResponseSchema(detail=f"An error occurred: {e} : no existe el userId", result=None)
 
     @staticmethod
-    async def change_status(user_id: int):
+    async def change_user_password(user_id: int, data: UserModel):
+        password = AuthService.generate_password()
+        hashed_password = AuthService.hash_password(password)
+
         try:
-            result = await UserRepository.change_user_status(user_id)
+            result = await UserRepository.change_password(user_id, hashed_password)
+            message = send_email(data.email, data.firstName, password)
+            await send_mms(message)
             if result:
-                return ResponseSchema(detail="Status successfully updated!", result=result)
+                return ResponseSchema(detail="Password successfully changed!", result=result)
             else:
                 return ResponseSchema(detail="Error", result=None)
         except Exception as e:
             print(f"Error updating user by ID: {e}")
-            return ResponseSchema(detail=f"An error occurred: {e} : no existe el userId", result=None)
+            return ResponseSchema(detail=f"An error occurred: {e} : No existe el userId", result=None)
 
     @staticmethod
     async def delete_by_id(user_id: int):
