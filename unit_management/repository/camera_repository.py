@@ -22,7 +22,8 @@ class CameraRepository:
         return await prisma_connection.prisma.camera.create({
             'name': camera.name,
             'location': camera.location,
-            'unitId': camera.unitId
+            'unitId': camera.unitId,
+            'url': camera.url
         })
 
     @staticmethod
@@ -30,7 +31,8 @@ class CameraRepository:
         return await prisma_connection.prisma.camera.update(where={"id": camera_id}, data={
             'name': camera.name,
             'location': camera.location,
-            'unitId': camera.unitId
+            'unitId': camera.unitId,
+            'url': camera.url
         })
 
     @staticmethod

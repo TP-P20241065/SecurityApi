@@ -5,6 +5,8 @@ class CreateCameraModel(BaseModel):
     name: str
     location: str
     unitId: int
+    url: str
+
 
 
 class CameraModel(BaseModel):
@@ -12,3 +14,4 @@ class CameraModel(BaseModel):
     name: str
     location: str
     unitId: int
+    url: str
