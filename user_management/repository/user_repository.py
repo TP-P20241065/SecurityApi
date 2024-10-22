@@ -8,7 +8,6 @@ class UserRepository:
 
     @staticmethod
     async def create(user: CreateUserModelV2, password: str):
-        print(f"password 2 : {password}")
         return await prisma_connection.prisma.user.create({
             'username': user.username,
             'firstName': user.firstName,
@@ -58,7 +57,14 @@ class UserRepository:
             'email': user.email,
             'headquarter': user.headquarter,
             'permissions': json.dumps(user.permissions),
-            'dni': user.dni
+            'dni': user.dni,
+            'isActive': user.isActive
+        })
+
+    @staticmethod
+    async def change_password(user_id: int, password: str):
+        return await prisma_connection.prisma.user.update(where={"id": user_id}, data={
+            'hashedPassword': password
         })
 
     @staticmethod
@@ -71,9 +77,3 @@ class UserRepository:
         # print(f"Record retrieved: {record}")  # Add console logging with f-string
         return result
 
-    @staticmethod
-    async def change_password(email: str, hashedPassword: str) -> str:
-        await prisma_connection.prisma.user.update(
-            where={"email": email},
-            data={"hashedPassword": hashedPassword})
-        return "Change Password ok!"
