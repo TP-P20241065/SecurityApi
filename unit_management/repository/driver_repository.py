@@ -27,7 +27,6 @@ class DriverRepository:
             'name': driver.name,
             'lastName': driver.lastName,
             'dni': driver.dni,
-            'image': driver.image
         })
 
     @staticmethod
@@ -35,8 +34,7 @@ class DriverRepository:
         return await prisma_connection.prisma.driver.update(where={"id": driver_id}, data={
             'name': driver.name,
             'lastName': driver.lastName,
-            'dni': driver.dni,
-            'image': driver.image
+            'dni': driver.dni
         })
 
     @staticmethod

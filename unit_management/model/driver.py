@@ -5,7 +5,6 @@ class CreateDriverModel(BaseModel):
     name: str
     lastName: str
     dni: int
-    image: bytes
 
 
 class DriverModel(BaseModel):
@@ -13,6 +12,5 @@ class DriverModel(BaseModel):
     name: str
     lastName: str
     dni: int
-    image: bytes
 
 

@@ -3,6 +3,7 @@ from shared.message.message_service import send_email, send_mms
 from shared.response.schema import ResponseSchema
 from user_management.model.user import CreateUserModelV2, UserModel
 from user_management.repository.user_repository import UserRepository
+from fastapi import HTTPException
 import asyncio
 
 
@@ -19,11 +20,11 @@ class UserService:
         )
 
         if existing_email:
-            raise ValueError(f'Email: {data.email} already registered')
+            raise HTTPException(status_code=400, detail=f'Correo: {data.email} ya esta registrado')
         if existing_username:
-            raise ValueError(f'Username: {data.username} already registered')
+            raise HTTPException(status_code=400, detail=f'Usuario: {data.username} ya esta registrado')
         if existing_dni:
-            raise ValueError(f'Dni: {data.dni} already registered')
+            raise HTTPException(status_code=400, detail=f'DNI: {data.dni} ya esta registrado')
 
         password = AuthService.generate_password()
         hash_password = AuthService.hash_password(password)
@@ -31,9 +32,9 @@ class UserService:
         message = send_email(data.email, data.firstName, password)
         await send_mms(message)
         if result:
-            return ResponseSchema(detail="User successfully created!", result=result)
+            return ResponseSchema(detail="Usuario creado exitosamente", result=result)
         else:
-            return ResponseSchema(detail="Failed to create user!", result=None)
+            return ResponseSchema(detail="Error al crear usuario!", result=None)
 
     @staticmethod
     async def get_all():
@@ -72,9 +73,9 @@ class UserService:
         try:
             result = await UserRepository.update(user_id, data)
             if result:
-                return ResponseSchema(detail="User successfully updated!", result=result)
+                return ResponseSchema(detail="El usuario se actualizó exitosamente", result=result)
             else:
-                return ResponseSchema(detail="user not found.", result=None)
+                return ResponseSchema(detail="Usuario no encontrado", result=None)
         except Exception as e:
             print(f"Error updating user by ID: {e}")
             return ResponseSchema(detail=f"An error occurred: {e} : no existe el userId", result=None)
@@ -89,7 +90,7 @@ class UserService:
             message = send_email(data.email, data.firstName, password)
             await send_mms(message)
             if result:
-                return ResponseSchema(detail="Password successfully changed!", result=result)
+                return ResponseSchema(detail="Contaseña restablecida", result=result)
             else:
                 return ResponseSchema(detail="Error", result=None)
         except Exception as e:

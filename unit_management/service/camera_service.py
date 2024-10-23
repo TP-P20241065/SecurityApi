@@ -55,6 +55,7 @@ class CameraService:
             else:
                 return ResponseSchema(detail="Camera not found.", result=None)
         except Exception as e:
+            print(f"Data: {data}")
             print(f"Error updating unit by ID: {e}")
             return ResponseSchema(detail=f"An error occurred: {e} : no existe el unitId", result=None)
 

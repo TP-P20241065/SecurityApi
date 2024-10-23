@@ -17,15 +17,25 @@ async def register(register: Register):
 
 @router.post("/login", response_model=TokenModel)
 async def login(login: Register):
+    # Verificar si el usuario existe
     if await AuthService.user_existed(login.email):
         user = await AuthService.get_user(login.email)
-        if AuthService.verify_password(login.password, user.hashedPassword):
-            token = await AuthService.create_access_token(user)
-            return token
+        # Verificar si la cuenta está activa
+        if user.isActive:
+            # Verificar si la contraseña es correcta
+            if AuthService.verify_password(login.password, user.hashedPassword):
+                token = await AuthService.create_access_token(user)
+                return token
+            else:
+                # Contraseña incorrecta
+                raise HTTPException(status_code=400, detail="Password or email incorrect")
         else:
-            raise HTTPException(status_code=400, detail= "Contraseña o Correo electrónico incorrecta")
+            # Usuario inactivo
+            raise HTTPException(status_code=400, detail="The account is deactivated")
     else:
-        raise HTTPException(status_code=400, detail="Correo electrónico no registrado")
+        # Correo electrónico no registrado
+        raise HTTPException(status_code=400, detail="Email not registered")
+
 
 
 @router.patch("/reset-password", response_model=ResponseSchema)
