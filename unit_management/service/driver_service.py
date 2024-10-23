@@ -40,18 +40,18 @@ class DriverService:
     async def create(data: CreateDriverModel):
         result = await DriverRepository.create(data)
         if result:
-            return ResponseSchema(detail="Successfully create driver!", result=result)
+            return ResponseSchema(detail="Conductor creado exitosamente", result=result)
         else:
-            return ResponseSchema(detail="Failed to create driver!", result=None)
+            return ResponseSchema(detail="Error al crear conductor!", result=None)
 
     @staticmethod
     async def update(driver_id: int, data: CreateDriverModel):
         try:
             result = await DriverRepository.update(driver_id, data)
             if result:
-                return ResponseSchema(detail="Successfully update driver!", result=result)
+                return ResponseSchema(detail="Conductor actualizado", result=result)
             else:
-                return ResponseSchema(detail="Driver not found.", result=None)
+                return ResponseSchema(detail="Conductor no encontrado.", result=None)
         except Exception as e:
             print(f"Error updating driver by ID: {e}")
             return ResponseSchema(detail=f"An error occurred: {e}", result=None)
@@ -60,6 +60,6 @@ class DriverService:
     async def delete_by_id(driver_id: int):
         result = await DriverRepository.delete(driver_id)
         if result:
-            return ResponseSchema(detail="Successfully delete driver!", result=result)
+            return ResponseSchema(detail="Conductor eliminado", result=result)
         else:
-            return ResponseSchema(detail="Driver not found.", result=None)
+            return ResponseSchema(detail="Conductor no encontrado.", result=None)

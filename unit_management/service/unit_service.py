@@ -39,16 +39,16 @@ class UnitService:
     async def create(data: CreateUnitModel):
         result = await UnitRepository.create(data)
         if result:
-            return ResponseSchema(detail="Successfully create unit!", result=result)
+            return ResponseSchema(detail="Unidad Creada", result=result)
         else:
-            return ResponseSchema(detail="Failed to create unit!", result=None)
+            return ResponseSchema(detail="Error al crear unidad", result=None)
 
     @staticmethod
     async def update(unit_id: int, data: CreateUnitModel):
         try:
             result = await UnitRepository.update(unit_id, data)
             if result:
-                return ResponseSchema(detail="Successfully update unit!", result=result)
+                return ResponseSchema(detail="Unidad actualizada", result=result)
             else:
                 return ResponseSchema(detail="Unit not found.", result=None)
         except Exception as e:
@@ -59,6 +59,6 @@ class UnitService:
     async def delete_by_id(user_id: int):
         result = await UnitRepository.delete(user_id)
         if result:
-            return ResponseSchema(detail="Successfully delete unit!", result=result)
+            return ResponseSchema(detail="Unidad eliminada", result=result)
         else:
             return ResponseSchema(detail="Unit not found.", result=None)

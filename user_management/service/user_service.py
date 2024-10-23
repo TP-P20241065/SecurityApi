@@ -101,6 +101,6 @@ class UserService:
     async def delete_by_id(user_id: int):
         result = await UserRepository.delete(user_id)
         if result:
-            return ResponseSchema(detail="User successfully deleted!", result=result)
+            return ResponseSchema(detail="Usuario eliminado", result=result)
         else:
             return ResponseSchema(detail="User not found.", result=None)
