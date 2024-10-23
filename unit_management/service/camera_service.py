@@ -42,7 +42,7 @@ class CameraService:
     async def create(data: CreateCameraModel):
         result = await CameraRepository.create(data)
         if result:
-            return ResponseSchema(detail="Successfully create camera!", result=result)
+            return ResponseSchema(detail="Camara creada!", result=result)
         else:
             return ResponseSchema(detail="Failed to create camera!", result=None)
 
@@ -51,9 +51,9 @@ class CameraService:
         try:
             result = await CameraRepository.update(camera_id, data)
             if result:
-                return ResponseSchema(detail="Successfully update camera!", result=result)
+                return ResponseSchema(detail="Camara actualizada!", result=result)
             else:
-                return ResponseSchema(detail="Camera not found.", result=None)
+                return ResponseSchema(detail="Camera no encontrada.", result=None)
         except Exception as e:
             print(f"Data: {data}")
             print(f"Error updating unit by ID: {e}")
@@ -63,6 +63,6 @@ class CameraService:
     async def delete_by_id(camera_id: int):
         result = await CameraRepository.delete(camera_id)
         if result:
-            return ResponseSchema(detail="Successfully delete camera!", result=result)
+            return ResponseSchema(detail="Camara eliminada!", result=result)
         else:
             return ResponseSchema(detail="Camera not found.", result=None)
