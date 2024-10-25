@@ -1,18 +1,22 @@
+from fastapi import UploadFile
 from pydantic import BaseModel
+from typing import Optional,BinaryIO
 
 
-class CreateReportModel(BaseModel):
-    address: str
-    incident: str
-    trackingLink: str
-    image: bytes
-    unitId: int
+class ReportCreate(BaseModel):
+    address: Optional[str]
+    incident: Optional[str]
+    trackingLink: Optional[str]
+    unitId: Optional[int]
+
+    class Config:
+        orm_mode = True
 
 
 class ReportModel(BaseModel):
     id: int
-    address: str
-    incident: str
-    trackingLink: str
-    image: bytes
-    unitId: int
+    address: Optional[str]
+    incident: Optional[str]
+    trackingLink: Optional[str]
+    image: Optional[bytes]
+    unitId: Optional[int]

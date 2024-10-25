@@ -7,3 +7,4 @@ pydantic
 PyJWT
 starlette
 uvicorn
+python-multipart

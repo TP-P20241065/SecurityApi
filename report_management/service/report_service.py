@@ -1,5 +1,8 @@
-from shared.response.schema import ResponseSchema
-from report_management.model.report import CreateReportModel
+from fastapi import UploadFile
+import base64
+from config.connection import prisma_connection
+from shared.response.schema import ResponseSchema, ResponseSchema2
+from report_management.model.report import ReportCreate
 from report_management.repository.report_repository import ReportRepository
 from shared.message.message_service import send_alert, send_mms
 
@@ -40,17 +43,35 @@ class ReportService:
             return ResponseSchema(detail="An error occurred:", result=None)
 
     @staticmethod
-    async def create(data: CreateReportModel):
-        result = await ReportRepository.create(data)
-        message = send_alert(data.address, data.incident, data.trackingLink, data.image, data.unitId)
-        await send_mms(message)
-        if result:
-            return ResponseSchema(detail="Report successfully created!", result=result)
-        else:
-            return ResponseSchema(detail="Failed to create report!", result=None)
+    async def create_report(address: str, incident: str, tracking_link: str, image: bytes, unit_id: int):
+        encoded_image = base64.b64encode(image).decode('utf-8')
+        return await prisma_connection.prisma.report.create(
+            data={
+                'address': address,
+                'incident': incident,
+                'trackingLink': tracking_link,
+                'image': encoded_image,
+                'unitId': unit_id,
+            }
+        )
 
     @staticmethod
-    async def update(report_id: int, data: CreateReportModel):
+    async def get_report(report_id: int):
+        report = await prisma_connection.prisma.report.find_unique(
+            where={'id': report_id}
+        )
+        return report
+
+    @staticmethod
+    async def get_report_image(report_id: int) -> str:
+        report = await prisma_connection.prisma.report.find_unique(where={"id": report_id})
+        if report and report.image:
+            return f"data:image/jpeg;base64,{report.image}"
+        else:
+            return None
+
+    @staticmethod
+    async def update(report_id: int, data: ReportCreate):
         try:
             result = await ReportRepository.update(report_id, data)
             if result:
