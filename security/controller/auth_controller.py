@@ -22,23 +22,23 @@ async def login_portal_desktop(login: Register):
         user = await AuthService.get_user(login.email)
         # Verificar si la cuenta está activa
         if user.isActive:
-            if 2 in user.permissions:
+            if 0 in user.permissions or 2 in user.permissions:
                 if AuthService.verify_password(login.password, user.hashedPassword):
                     token = await AuthService.create_access_token(user)
                     return token
                 else:
                     # Contraseña incorrecta
-                    raise HTTPException(status_code=400, detail="Password or email incorrect")
+                    raise HTTPException(status_code=400, detail="Contraseña Incorrrecta")
             else:
                 # Usuario no tiene permiso para acceder al aplicacion de escritorio
                 raise HTTPException(status_code=400,
                                     detail="No tienes permiso para acceder la aplicación de escritorio.")
         else:
             # Usuario inactivo
-            raise HTTPException(status_code=400, detail="The account is deactivated")
+            raise HTTPException(status_code=400, detail="La cuenta esta desactivada")
     else:
         # Correo electrónico no registrado
-        raise HTTPException(status_code=400, detail="Email not registered")
+        raise HTTPException(status_code=400, detail="Correo no resgistrado")
 
 
 @router.patch("/reset-password", response_model=ResponseSchema)
@@ -63,7 +63,7 @@ async def login_portal_admin(login: Register):
                     return token
                 else:
                     # Contraseña incorrecta
-                    raise HTTPException(status_code=400, detail="Password or email incorrect")
+                    raise HTTPException(status_code=400, detail="Contraseña incorrecta")
             else:
                 # Usuario no tiene permiso para acceder al portal administrativo
                 raise HTTPException(status_code=400,
@@ -72,7 +72,7 @@ async def login_portal_admin(login: Register):
 
         else:
             # Usuario inactivo
-            raise HTTPException(status_code=400, detail="The account is deactivated")
+            raise HTTPException(status_code=400, detail="La cuenta esta desactivada")
     else:
         # Correo electrónico no registrado
-        raise HTTPException(status_code=400, detail="Email not registered")
+        raise HTTPException(status_code=400, detail="Correo no registrado")

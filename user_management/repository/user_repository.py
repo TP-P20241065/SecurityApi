@@ -35,6 +35,18 @@ class UserRepository:
         return await prisma_connection.prisma.user.find_first(where={"email": email})
 
     @staticmethod
+    async def get_users_by_email_username_dni(email: str, username: str, dni: str):
+        return await prisma_connection.prisma.user.find_many(
+            where={
+                "OR": [
+                    {"email": email},
+                    {"username": username},
+                    {"dni": dni}
+                ]
+            }
+        )
+
+    @staticmethod
     async def get_user_by_dni(dni: int):
         return await prisma_connection.prisma.user.find_first(where={"dni": dni})
 
@@ -76,4 +88,6 @@ class UserRepository:
         result = await prisma_connection.prisma.user.find_first(where={"email": email})
         # print(f"Record retrieved: {record}")  # Add console logging with f-string
         return result
+
+
 

@@ -1,4 +1,6 @@
+from fastapi import HTTPException
 
+from shared.exception.validators import validate_existence
 from shared.response.schema import ResponseSchema
 from unit_management.model.unit import CreateUnitModel
 from unit_management.repository.unit_repository import UnitRepository
@@ -26,7 +28,7 @@ class UnitService:
     @staticmethod
     async def get_filtered(name: str):
         try:
-            result = await UnitRepository.get_filtered(name)  # Potential error here
+            result = await UnitRepository.get_by_car_plate(name)  # Potential error here
             if result:
                 return ResponseSchema(detail="Successfully got driver by unit!", result=result)
             else:
@@ -37,23 +39,31 @@ class UnitService:
 
     @staticmethod
     async def create(data: CreateUnitModel):
+        existing_car_plate = await UnitRepository.get_by_car_plate(data.carPlate)
+        if existing_car_plate:
+            raise HTTPException(status_code=400, detail=f'La placa con el nombre {data.carPlate} ya existe')
         result = await UnitRepository.create(data)
         if result:
-            return ResponseSchema(detail="Unidad Creada", result=result)
+            return ResponseSchema(detail="Unidad creada exitosamente", result=result)
         else:
-            return ResponseSchema(detail="Error al crear unidad", result=None)
+            raise HTTPException(status_code=500, detail="Error al crear unidad")  # Lanzar excepción en caso de error
 
     @staticmethod
     async def update(unit_id: int, data: CreateUnitModel):
-        try:
-            result = await UnitRepository.update(unit_id, data)
-            if result:
-                return ResponseSchema(detail="Unidad actualizada", result=result)
-            else:
-                return ResponseSchema(detail="Unit not found.", result=None)
-        except Exception as e:
-            print(f"Error updating unit by ID: {e}")
-            return ResponseSchema(detail=f"An error occurred: {e} : no existe el driverId", result=None)
+        existing_unit = await UnitRepository.get_by_id(unit_id)
+        validate_existence(existing_unit, unit_id, "Unidad")
+
+        existing_unit_with_same_plate = await UnitRepository.get_by_car_plate(data.carPlate)
+
+        # Si hay otra unidad con la misma placa y no es la unidad que estamos actualizando
+        if existing_unit_with_same_plate and existing_unit_with_same_plate.id != unit_id:
+            raise HTTPException(status_code=400, detail=f'Placa: {data.carPlate} ya está registrada')
+
+        result = await UnitRepository.update(unit_id, data)
+        if result:
+            return ResponseSchema(detail="Unidad actualizada exitosamente", result=result)
+        else:
+            raise HTTPException(status_code=500, detail="Error al actualizar unidad!")
 
     @staticmethod
     async def delete_by_id(user_id: int):

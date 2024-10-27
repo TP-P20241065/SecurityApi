@@ -9,14 +9,12 @@ class UnitRepository:
         return await prisma_connection.prisma.unit.find_many()
 
     @staticmethod
-    async def get_by_id(unit_id: int):
-        return await prisma_connection.prisma.unit.find_first(where={"id": unit_id})
+    async def get_by_id(id: int):
+        return await prisma_connection.prisma.unit.find_first(where={"id": id})
 
     @staticmethod
-    async def get_filtered(_name: str):
-        record = await prisma_connection.prisma.unit.find_many(where={"car_plate": _name})
-        # print(f"Record retrieved: {record}")  # Add console logging with f-string
-        return record
+    async def get_by_car_plate(_car_plate: str):
+        return await prisma_connection.prisma.unit.find_first(where={"carPlate": _car_plate})
 
     @staticmethod
     async def create(unit: CreateUnitModel):

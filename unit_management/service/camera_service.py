@@ -1,3 +1,6 @@
+from fastapi import HTTPException
+
+from shared.exception.validators import validate_existence, validate_uniqueness, validate_uniqueness_by_id
 from shared.response.schema import ResponseSchema
 from unit_management.model.camera import CreateCameraModel
 from unit_management.repository.camera_repository import CameraRepository
@@ -40,24 +43,38 @@ class CameraService:
 
     @staticmethod
     async def create(data: CreateCameraModel):
+        existing_item_duplicate = await CameraRepository.get_cameras_by_name_url(data.name, data.url)
+        attributes_to_check = {
+            'name': data.name,
+            'url': data.url,
+            # Puedes agregar más atributos aquí
+        }
+        validate_uniqueness(existing_item_duplicate, attributes_to_check)
         result = await CameraRepository.create(data)
         if result:
             return ResponseSchema(detail="Camara creada!", result=result)
         else:
-            return ResponseSchema(detail="Failed to create camera!", result=None)
+            raise HTTPException(status_code=500, detail="Error al crear camara")
 
     @staticmethod
     async def update(camera_id: int, data: CreateCameraModel):
-        try:
-            result = await CameraRepository.update(camera_id, data)
-            if result:
-                return ResponseSchema(detail="Camara actualizada!", result=result)
-            else:
-                return ResponseSchema(detail="Camera no encontrada.", result=None)
-        except Exception as e:
-            print(f"Data: {data}")
-            print(f"Error updating unit by ID: {e}")
-            return ResponseSchema(detail=f"An error occurred: {e} : no existe el unitId", result=None)
+        # valida si existe el objeto y da las respuesta correspondiente
+        existing_item = await CameraRepository.get_by_id(camera_id)
+        validate_existence(existing_item, camera_id, "Camara")
+        # valida si ya existen objetos con atributos duplicados
+        existing_item_duplicate = await CameraRepository.get_cameras_by_name_url(data.name, data.url)
+        attributes_to_check = {
+            'name': data.name,
+            'url': data.url,
+            # Puedes agregar más atributos aquí
+        }
+        validate_uniqueness_by_id(existing_item_duplicate, camera_id, attributes_to_check)
+        result = await CameraRepository.update(camera_id, data)
+        if result:
+            return ResponseSchema(detail="Camara actualizada exitosamente", result=result)
+        else:
+            raise HTTPException(status_code=500, detail="Error al actualizar unidad!")
+
 
     @staticmethod
     async def delete_by_id(camera_id: int):

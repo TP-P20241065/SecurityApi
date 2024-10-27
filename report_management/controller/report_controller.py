@@ -57,7 +57,7 @@ async def create_report(
     image_data = await image.read()
     report = await ReportService.create_report(address, incident, tracking_link, image_data, unit_id)
     if not report:
-        raise HTTPException(status_code=400, detail="Error creating report")
+        raise HTTPException(status_code=400, detail="Error al crear reporte")
     return {"id": report.id}
 
 

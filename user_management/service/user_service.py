@@ -70,15 +70,30 @@ class UserService:
 
     @staticmethod
     async def update(user_id: int, data: CreateUserModelV2):
-        try:
-            result = await UserRepository.update(user_id, data)
-            if result:
-                return ResponseSchema(detail="El usuario se actualizó exitosamente", result=result)
-            else:
-                return ResponseSchema(detail="Usuario no encontrado", result=None)
-        except Exception as e:
-            print(f"Error updating user by ID: {e}")
-            return ResponseSchema(detail=f"An error occurred: {e} : no existe el userId", result=None)
+
+        # Primero, obtenemos el usuario actual para asegurarnos de que existe
+        existing_user = await UserRepository.get_by_id(user_id)
+        if not existing_user:
+            raise HTTPException(status_code=404, detail=f'Usuario con ID {user_id} no encontrado')
+
+            # Comprobamos si hay duplicados en email, username y dni en una sola consulta
+        existing_users = await UserRepository.get_users_by_email_username_dni(data.email, data.username, data.dni)
+
+        # Validamos duplicados, ignorando el usuario actual
+        for user in existing_users:
+            if user.id != user_id:
+                if user.email == data.email:
+                    raise HTTPException(status_code=400, detail=f'Correo: {data.email} ya está registrado')
+                if user.username == data.username:
+                    raise HTTPException(status_code=400, detail=f'Usuario: {data.username} ya está registrado')
+                if user.dni == data.dni:
+                    raise HTTPException(status_code=400, detail=f'DNI: {data.dni} ya está registrado')
+
+        result = await UserRepository.update(user_id, data)
+        if result:
+            return ResponseSchema(detail="Usuario actualizado exitosamente", result=result)
+        else:
+            return ResponseSchema(detail="Error al actualizar usuario!", result=None)
 
     @staticmethod
     async def change_user_password(user_id: int, data: UserModel):
@@ -90,7 +105,7 @@ class UserService:
             message = send_email(data.email, data.firstName, password)
             await send_mms(message)
             if result:
-                return ResponseSchema(detail="Contaseña restablecida", result=result)
+                return ResponseSchema(detail="Contaseña restablecida rebice su correo", result=result)
             else:
                 return ResponseSchema(detail="Error", result=None)
         except Exception as e:

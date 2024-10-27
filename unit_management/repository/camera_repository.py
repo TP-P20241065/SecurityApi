@@ -38,3 +38,14 @@ class CameraRepository:
     @staticmethod
     async def delete(unit_id: int):
         return await prisma_connection.prisma.camera.delete(where={"id": unit_id})
+
+    @staticmethod
+    async def get_cameras_by_name_url(name: str, url: str):
+        return await prisma_connection.prisma.camera.find_many(
+            where={
+                "OR": [
+                    {"name": name},
+                    {"url": url}
+                ]
+            }
+        )

@@ -8,7 +8,6 @@ class CreateCameraModel(BaseModel):
     unitId: int
 
 
-
 class CameraModel(BaseModel):
     id: int
     name: str

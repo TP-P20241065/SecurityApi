@@ -12,14 +12,11 @@ class DriverRepository:
         return await prisma_connection.prisma.driver.find_many()
 
     @staticmethod
-    async def get_by_id(driver_id: int):
-        return await prisma_connection.prisma.driver.find_first(where={"id": driver_id})
-
+    async def get_by_id(id: int):
+        return await prisma_connection.prisma.driver.find_first(where={"id": id})
     @staticmethod
-    async def get_filtered(name: str):
-        record = await prisma_connection.prisma.driver.find_many(where={"name": name})
-        # print(f"Record retrieved: {record}")  # Add console logging with f-string
-        return record
+    async def get_driver_by_dni(dni: str):
+        return await prisma_connection.prisma.driver.find_first(where={"dni": dni})
 
     @staticmethod
     async def create(driver: CreateDriverModel):

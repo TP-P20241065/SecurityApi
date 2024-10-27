@@ -1,5 +1,8 @@
 from typing import Dict
 
+from fastapi import HTTPException
+
+from shared.exception.validators import validate_existence, validate_uniqueness_single_by_id, validate_uniqueness_single
 from shared.response.schema import ResponseSchema
 from unit_management.model.driver import CreateDriverModel
 from unit_management.repository.driver_repository import DriverRepository
@@ -38,23 +41,28 @@ class DriverService:
 
     @staticmethod
     async def create(data: CreateDriverModel):
+        existing_item_duplicate = await DriverRepository.get_driver_by_dni(data.dni)
+        validate_uniqueness_single(existing_item_duplicate, 'dni', data.dni)
+
         result = await DriverRepository.create(data)
         if result:
-            return ResponseSchema(detail="Conductor creado exitosamente", result=result)
+            return ResponseSchema(detail="Conductor creado!", result=result)
         else:
-            return ResponseSchema(detail="Error al crear conductor!", result=None)
+            raise HTTPException(status_code=500, detail="Error al crear conductor")
 
     @staticmethod
     async def update(driver_id: int, data: CreateDriverModel):
-        try:
-            result = await DriverRepository.update(driver_id, data)
-            if result:
-                return ResponseSchema(detail="Conductor actualizado", result=result)
-            else:
-                return ResponseSchema(detail="Conductor no encontrado.", result=None)
-        except Exception as e:
-            print(f"Error updating driver by ID: {e}")
-            return ResponseSchema(detail=f"An error occurred: {e}", result=None)
+        # valida si existe el objeto y da las respuesta correspondiente
+        existing_item = await DriverRepository.get_by_id(driver_id)
+        validate_existence(existing_item, driver_id, "Conductor")
+        # valida si ya existen objetos con atributos duplicados
+        existing_item_duplicate = await DriverRepository.get_driver_by_dni(data.dni)
+        validate_uniqueness_single_by_id(existing_item_duplicate, driver_id, 'dni', data.dni)
+        result = await DriverRepository.update(driver_id, data)
+        if result:
+            return ResponseSchema(detail="Conductor actualizado exitosamente", result=result)
+        else:
+            raise HTTPException(status_code=500, detail="Error al actualizar conductor!")
 
     @staticmethod
     async def delete_by_id(driver_id: int):
