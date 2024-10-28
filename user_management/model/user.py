@@ -9,7 +9,7 @@ class CreateUserModelV3(BaseModel):
     email: str
     headquarter: int
     permissions: List[int]
-    dni: int
+    dni: str
     password: str
     isActive: bool
 
@@ -20,7 +20,7 @@ class CreateUserModelV2(BaseModel):
     email: str = Field(default='correo@mail.com')
     headquarter: int
     permissions: List[int]
-    dni: int
+    dni: str
     isActive: bool
 
 
@@ -34,5 +34,5 @@ class UserModel(BaseModel):
     email: str
     headquarter: int
     permissions: List[int]
-    dni: int
+    dni: str
     isActive: bool
