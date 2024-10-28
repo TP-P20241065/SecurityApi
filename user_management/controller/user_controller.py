@@ -17,7 +17,7 @@ async def create_user(create_data: CreateUserModelV2):
 
 @router.post("", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
 async def create_custom_user(create_data: CreateUserModelV3):
-    result = await UserService.create(create_data)
+    result = await UserService.create_custom_user(create_data)
     return result
 
 @router.get("", response_model=ResponseSchema[List[UserModel]], response_model_exclude_none=True)
