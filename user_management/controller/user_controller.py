@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any, List
 
 from fastapi import APIRouter, Path, Body, Query
 from shared.response.schema import ResponseSchema
-from user_management.model.user import CreateUserModelV2, UserModel
+from user_management.model.user import CreateUserModelV3, CreateUserModelV2, UserModel
 from user_management.service.user_service import UserService
 
 router = APIRouter(
@@ -15,6 +15,10 @@ async def create_user(create_data: CreateUserModelV2):
     result = await UserService.create(create_data)
     return result
 
+@router.post("", response_model=ResponseSchema[UserModel], response_model_exclude_none=True)
+async def create_custom_user(create_data: CreateUserModelV3):
+    result = await UserService.create(create_data)
+    return result
 
 @router.get("", response_model=ResponseSchema[List[UserModel]], response_model_exclude_none=True)
 async def get_all_users():
