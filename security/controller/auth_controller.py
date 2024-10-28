@@ -18,27 +18,30 @@ async def register(register: Register):
 @router.post("/login/portal-desktop", response_model=TokenModel)
 async def login_portal_desktop(login: Register):
     # Verificar si el usuario existe
-    if await AuthService.user_existed(login.email):
-        user = await AuthService.get_user(login.email)
-        # Verificar si la cuenta está activa
-        if user.isActive:
-            if 0 in user.permissions or 2 in user.permissions:
-                if AuthService.verify_password(login.password, user.hashedPassword):
-                    token = await AuthService.create_access_token(user)
-                    return token
-                else:
-                    # Contraseña incorrecta
-                    raise HTTPException(status_code=400, detail="Contraseña Incorrrecta")
-            else:
-                # Usuario no tiene permiso para acceder al aplicacion de escritorio
-                raise HTTPException(status_code=400,
-                                    detail="No tienes permiso para acceder la aplicación de escritorio.")
-        else:
-            # Usuario inactivo
-            raise HTTPException(status_code=400, detail="La cuenta esta desactivada")
-    else:
+    if not await AuthService.user_existed(login.email):
         # Correo electrónico no registrado
-        raise HTTPException(status_code=400, detail="Correo no resgistrado")
+        raise HTTPException(status_code=400, detail="Correo no registrado")
+
+    user = await AuthService.get_user(login.email)
+
+    # Verificar si la contraseña es correcta
+    if not AuthService.verify_password(login.password, user.hashedPassword):
+        # Contraseña incorrecta
+        raise HTTPException(status_code=400, detail="Contraseña incorrecta")
+
+    # Verificar si la cuenta está activa
+    if not user.isActive:
+        # Usuario inactivo
+        raise HTTPException(status_code=400, detail="La cuenta está desactivada")
+
+    # Verificar si la cuenta tiene permiso para acceder a la aplicación de escritorio
+    if 0 not in user.permissions and 2 not in user.permissions:
+        raise HTTPException(status_code=400,
+                            detail="No tienes permiso para acceder a la aplicación de escritorio.")
+
+    # Crear y retornar el token de acceso si todas las verificaciones pasan
+    token = await AuthService.create_access_token(user)
+    return token
 
 
 @router.patch("/reset-password", response_model=ResponseSchema)
@@ -53,26 +56,28 @@ async def reset_password(email: str):
 @router.post("/login/portal-admin", response_model=TokenModel)
 async def login_portal_admin(login: Register):
     # Verificar si el usuario existe
-    if await AuthService.user_existed(login.email):
-        user = await AuthService.get_user(login.email)
-        # Verificar si la cuenta está activa
-        if user.isActive:
-            if 0 in user.permissions or 1 in user.permissions:
-                if AuthService.verify_password(login.password, user.hashedPassword):
-                    token = await AuthService.create_access_token(user)
-                    return token
-                else:
-                    # Contraseña incorrecta
-                    raise HTTPException(status_code=400, detail="Contraseña incorrecta")
-            else:
-                # Usuario no tiene permiso para acceder al portal administrativo
-                raise HTTPException(status_code=400,
-                                    detail="No tienes permiso para acceder al portal administrativo.")
-            # Verificar si la contraseña es correcta
-
-        else:
-            # Usuario inactivo
-            raise HTTPException(status_code=400, detail="La cuenta esta desactivada")
-    else:
+    if not await AuthService.user_existed(login.email):
         # Correo electrónico no registrado
         raise HTTPException(status_code=400, detail="Correo no registrado")
+
+    user = await AuthService.get_user(login.email)
+
+    # Verificar si la contraseña es correcta
+    if not AuthService.verify_password(login.password, user.hashedPassword):
+        # Contraseña incorrecta
+        raise HTTPException(status_code=400, detail="Contraseña incorrecta")
+
+    # Verificar si la cuenta está activa
+    if not user.isActive:
+        # Usuario inactivo
+        raise HTTPException(status_code=400, detail="La cuenta está desactivada")
+
+    # Verificar si la cuenta tiene permiso para acceder al portal administrativo
+    if 0 not in user.permissions and 1 not in user.permissions:
+        raise HTTPException(status_code=400,
+                            detail="No tienes permiso para acceder al portal administrativo.")
+
+    # Crear y retornar el token de acceso si todas las verificaciones pasan
+    token = await AuthService.create_access_token(user)
+    return token
+
