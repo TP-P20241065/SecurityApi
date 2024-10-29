@@ -27,10 +27,16 @@ class UserService:
             raise HTTPException(status_code=400, detail=f'DNI: {data.dni} ya esta registrado')
 
         password = AuthService.generate_password()
+        message = send_email(data.email, data.firstName, password)
+
+        try:
+            await send_mms(message)
+        except Exception:
+            raise HTTPException(status_code=400, detail=f'Ocurrió un error del remitente al intentar enviar las credenciales.')
+
         hash_password = AuthService.hash_password(password)
         result = await UserRepository.create(data, hash_password)
-        message = send_email(data.email, data.firstName, password)
-        await send_mms(message)
+
         if result:
             return ResponseSchema(detail="Usuario creado exitosamente", result=result)
         else:
