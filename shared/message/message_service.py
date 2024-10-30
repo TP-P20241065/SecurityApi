@@ -1,7 +1,7 @@
 import os
-from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
-from email.mime.application import MIMEApplication
+from fastapi_mail import ConnectionConfig, FastMail
 from unit_management.controller.unit_controller import get_unit_by_id
+from fastapi_mail import MessageSchema
 
 conf = ConnectionConfig(
     MAIL_USERNAME=os.getenv("EMAIL"),
@@ -27,11 +27,14 @@ def send_email(email, first_name, password):
     )
     return message
 
+
 async def send_alert(address, incident, tracking_link, image, unit_id):
     unit = await get_unit_by_id(unit_id)
+    car_plate = unit.result.carPlate
     email = os.getenv("AUTHORITIES_EMAIL")
     description = incident
     title = "ALERTA REPORTADA"
+
     if incident == '':
         email = os.getenv("SECURITY_EMAIL")
         description = "BOTÓN DE PÁNICO"
@@ -41,18 +44,12 @@ async def send_alert(address, incident, tracking_link, image, unit_id):
     message = MessageSchema(
         subject=str(title),
         recipients=[email],
-        body="Incidencia: " + str(description) + "\r\r\n"
-        + "Dirección: " + str(address) + "\r\r\n"
-        + "Enlace de rastreo: " + str(tracking_link) + "\r\r\n"
-        + "Unidad: " + str(unit.result["carPlate"]) + "\r\r\n",
-        subtype="html"
+        body="Incidencia: " + str(description) + "<br><br>"
+             + "Dirección: " + str(address) + "<br><br>"
+             + "Enlace de rastreo: " + str(tracking_link) + "<br><br>"
+             + "Unidad: " + str(car_plate) + "<br><br>",
+        subtype="html",
+        attachments=[image]
     )
-
-    # Adjuntar imagen
-    if image:
-        with open(image, "rb") as file:
-            img_attachment = MIMEApplication(file.read(), name=os.path.basename(image))
-            img_attachment['Content-Disposition'] = f'attachment; filename="{os.path.basename(image)}"'
-            message.attachments = [img_attachment]
 
     return message
