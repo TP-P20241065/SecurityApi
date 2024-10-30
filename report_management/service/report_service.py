@@ -5,7 +5,7 @@ from shared.response.schema import ResponseSchema, ResponseSchema2
 from report_management.model.report import ReportCreate
 from report_management.repository.report_repository import ReportRepository
 from shared.message.message_service import send_alert, send_mms
-
+from fastapi import HTTPException
 
 class ReportService:
 
@@ -44,6 +44,11 @@ class ReportService:
 
     @staticmethod
     async def create_report(address: str, incident: str, tracking_link: str, image: bytes, unit_id: int):
+        message = await send_alert(address, incident, tracking_link, image, unit_id)
+        try:
+            await send_mms(message)
+        except Exception:
+            raise HTTPException(status_code=400, detail=f'Ocurrió un error del remitente al intentar enviar el reporte.')
         encoded_image = base64.b64encode(image).decode('utf-8')
         return await prisma_connection.prisma.report.create(
             data={
