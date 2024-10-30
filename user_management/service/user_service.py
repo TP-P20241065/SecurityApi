@@ -27,10 +27,16 @@ class UserService:
             raise HTTPException(status_code=400, detail=f'DNI: {data.dni} ya esta registrado')
 
         password = AuthService.generate_password()
+        message = send_email(data.email, data.firstName, password)
+
+        try:
+            await send_mms(message)
+        except Exception:
+            raise HTTPException(status_code=400, detail=f'Ocurrió un error del remitente al intentar enviar las credenciales.')
+
         hash_password = AuthService.hash_password(password)
         result = await UserRepository.create(data, hash_password)
-        message = send_email(data.email, data.firstName, password)
-        await send_mms(message)
+
         if result:
             return ResponseSchema(detail="Usuario creado exitosamente", result=result)
         else:
@@ -132,7 +138,7 @@ class UserService:
         if result:
             return ResponseSchema(detail="Usuario actualizado exitosamente", result=result)
         else:
-            return ResponseSchema(detail="Error al actualizar usuario!", result=None)
+            return ResponseSchema(detail="Error al actualizar usuario", result=None)
 
     @staticmethod
     async def change_user_password(user_id: int, data: UserModel):
@@ -144,7 +150,7 @@ class UserService:
             message = send_email(data.email, data.firstName, password)
             await send_mms(message)
             if result:
-                return ResponseSchema(detail="Contaseña restablecida rebice su correo", result=result)
+                return ResponseSchema(detail="Contaseña restablecida exitosamente", result=result)
             else:
                 return ResponseSchema(detail="Error", result=None)
         except Exception as e:

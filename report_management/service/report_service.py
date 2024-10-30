@@ -1,11 +1,8 @@
-from fastapi import UploadFile
 import base64
 from config.connection import prisma_connection
-from shared.response.schema import ResponseSchema, ResponseSchema2
+from shared.response.schema import ResponseSchema
 from report_management.model.report import ReportCreate
 from report_management.repository.report_repository import ReportRepository
-from shared.message.message_service import send_alert, send_mms
-
 
 class ReportService:
 
