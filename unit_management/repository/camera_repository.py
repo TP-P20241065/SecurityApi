@@ -45,7 +45,11 @@ class CameraRepository:
             where={
                 "OR": [
                     {"name": name},
-                    {"url": url}
+                    {"url": url,
+                     "NOT": {
+                         "url": "0"
+                     }
+                     }
                 ]
             }
         )
