@@ -1,7 +1,8 @@
 argon2-cffi
 fastapi
 fastapi-mail
-opencv-python
+numpy
+opencv-python-headless
 passlib
 prisma
 pydantic
