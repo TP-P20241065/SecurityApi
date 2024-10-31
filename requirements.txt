@@ -1,10 +1,12 @@
 argon2-cffi
 fastapi
 fastapi-mail
+opencv-python
 passlib
 prisma
 pydantic
 PyJWT
+python-multipart
 starlette
 uvicorn
-python-multipart
+yt_dlp
