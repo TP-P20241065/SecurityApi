@@ -10,6 +10,9 @@ from shared.message.message_service import send_alert, send_mms
 from shared.response.schema import ResponseSchema, ResponseSchema2
 from report_management.model.report import  ReportCreate
 from report_management.service.report_service import ReportService
+from unit_management.controller.camera_controller import get_all_camera
+import cv2
+import yt_dlp as youtube_dl
 
 router = APIRouter(
     prefix="/report",
@@ -53,9 +56,64 @@ async def create_report(
         address: str = Form(...),
         incident: Optional[str] = Form(None),
         tracking_link: str = Form(...),
-        image: UploadFile = File(...),
+        image: Optional[UploadFile] = File(...),
         unit_id: int = Form(...)
 ):
+    def youtube_stream(current_view):
+        youtube_url = current_view
+
+        # Configuración para seleccionar la calidad en 480p o la mejor calidad inferior disponible
+        ydl_opts = {
+            'format': 'best[height<=480]/best',  # 480p o la mejor calidad inferior posible
+        }
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(youtube_url, download=False)
+            live_url = info['url']
+
+        return cv2.VideoCapture(live_url)
+
+    def ip_stream(current_view):
+        return cv2.VideoCapture(current_view)
+
+    def link_check(current_view):
+        if current_view == '0':
+            return cv2.VideoCapture(0)
+        elif 'youtube.com' in current_view or 'youtu.be' in current_view:
+            return youtube_stream(current_view)
+        else:
+            return ip_stream(current_view)
+
+    if not image:
+        response = get_all_camera
+        data = response.json() if response.status_code == 200 else {}
+
+        # Extraer la lista de cámaras del campo `result` si existe
+        cameras = data.get('result', [])
+
+        # Filtrar y obtener los unitid de cámaras
+        unit_cameras = list(
+            {camera['url'] for camera in cameras if camera.get('unit_id') == unit_id})
+
+        # Capturar la transmisión de video
+        cap = link_check(unit_cameras[0])
+        ret, frame = cap.read()  # Leer el fotograma de la cámara
+        cap.release()
+
+        # Verificar si se capturó el fotograma correctamente
+        if not ret:
+            raise HTTPException(status_code=400, detail="No se pudo capturar la imagen desde la transmisión.")
+
+        # Convertir el fotograma al formato RGB y guardarlo en un archivo temporal en memoria
+        _, buffer = cv2.imencode('.jpg', frame)
+        image_data = io.BytesIO(buffer.tobytes())
+        image_data.name = "boton_panico.jpg"
+
+        # Crear un objeto UploadFile desde el archivo en memoria
+        image = UploadFile(
+            filename=image_data.name,
+            file=image_data
+        )
+
     # Lee los datos de la imagen
     image_data = await image.read()
 

@@ -146,9 +146,13 @@ class UserService:
         hashed_password = AuthService.hash_password(password)
 
         try:
-            result = await UserRepository.change_password(user_id, hashed_password)
             message = send_email(data.email, data.firstName, password)
-            await send_mms(message)
+            try:
+                await send_mms(message)
+            except Exception:
+                raise HTTPException(status_code=400, detail=f'Ocurrió un error del remitente al intentar enviar las credenciales.')
+
+            result = await UserRepository.change_password(user_id, hashed_password)
             if result:
                 return ResponseSchema(detail="Contaseña restablecida exitosamente", result=result)
             else:
