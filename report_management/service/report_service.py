@@ -41,11 +41,14 @@ class ReportService:
 
     @staticmethod
     async def create_report(address: str, incident: str, tracking_link: str, image: bytes, unit_id: int):
+        report = incident
+        if incident == "":
+            report = "BOTÓN DE PÁNICO"
         encoded_image = base64.b64encode(image).decode('utf-8')
         return await prisma_connection.prisma.report.create(
             data={
                 'address': address,
-                'incident': incident,
+                'incident': report,
                 'trackingLink': tracking_link,
                 'image': encoded_image,
                 'unitId': unit_id,

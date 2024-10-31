@@ -56,7 +56,7 @@ async def create_report(
         address: str = Form(...),
         incident: Optional[str] = Form(None),
         tracking_link: str = Form(...),
-        image: Optional[UploadFile] = File(...),
+        image: UploadFile = File(None),
         unit_id: int = Form(...)
 ):
     def youtube_stream(current_view):
@@ -84,29 +84,32 @@ async def create_report(
             return ip_stream(current_view)
 
     if not image:
-        response = get_all_camera
-        data = response.json() if response.status_code == 200 else {}
+        response = await get_all_camera()
+        cameras = response.result if response.detail == 'Data successfully obtained!' else []
 
-        # Extraer la lista de cámaras del campo `result` si existe
-        cameras = data.get('result', [])
-
-        # Filtrar y obtener los unitid de cámaras
+        # Filtrar y obtener los unitId de cámaras
         unit_cameras = list(
-            {camera['url'] for camera in cameras if camera.get('unit_id') == unit_id})
+            {camera.url for camera in cameras if camera.unitId == unit_id}
+        )
 
+        print("Url listed")
         # Capturar la transmisión de video
         cap = link_check(unit_cameras[0])
         ret, frame = cap.read()  # Leer el fotograma de la cámara
         cap.release()
 
+        print("Ret")
         # Verificar si se capturó el fotograma correctamente
         if not ret:
             raise HTTPException(status_code=400, detail="No se pudo capturar la imagen desde la transmisión.")
 
+        print("Convertir")
         # Convertir el fotograma al formato RGB y guardarlo en un archivo temporal en memoria
         _, buffer = cv2.imencode('.jpg', frame)
         image_data = io.BytesIO(buffer.tobytes())
         image_data.name = "boton_panico.jpg"
+
+        print("Boton panico")
 
         # Crear un objeto UploadFile desde el archivo en memoria
         image = UploadFile(
@@ -114,6 +117,7 @@ async def create_report(
             file=image_data
         )
 
+    print("Imagen data")
     # Lee los datos de la imagen
     image_data = await image.read()
 
