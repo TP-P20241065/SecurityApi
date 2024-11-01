@@ -1,6 +1,7 @@
 # Usa una imagen base de Python
-FROM python:3.11-slim
-
+FROM python:3.10-slim
+# Instala la librería libgl1 que OpenCV necesita
+RUN apt-get update && apt-get install -y libgl1
 # Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 

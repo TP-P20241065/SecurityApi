@@ -10,4 +10,4 @@ PyJWT
 python-multipart
 starlette
 uvicorn
-yt_dlp
+yt-dlp

@@ -159,7 +159,7 @@ class UserService:
                 return ResponseSchema(detail="Error", result=None)
         except Exception as e:
             print(f"Error updating user by ID: {e}")
-            return ResponseSchema(detail=f"An error occurred: {e} : No existe el userId", result=None)
+            raise HTTPException(status_code=400, detail=f'Ocurrió un error del remitente al intentar enviar las credenciales.')
 
     @staticmethod
     async def delete_by_id(user_id: int):
