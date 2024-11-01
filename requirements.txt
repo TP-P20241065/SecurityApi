@@ -1,6 +1,8 @@
 argon2-cffi
 fastapi
 fastapi-mail
+google
+google-auth-oauthlib
 numpy
 opencv-python-headless
 passlib

@@ -1,11 +1,9 @@
-import base64
 import io
-from typing import Optional, Dict, Any
+import os
+from typing import Optional
 
-from fastapi import APIRouter, Path, UploadFile, File, Form, HTTPException,Response
+from fastapi import APIRouter, Path, UploadFile, File, Form, HTTPException, Response
 from starlette.responses import JSONResponse
-
-from report_management.repository.report_repository import ReportRepository
 from shared.message.message_service import send_alert, send_mms
 from shared.response.schema import ResponseSchema, ResponseSchema2
 from report_management.model.report import  ReportCreate
@@ -13,6 +11,10 @@ from report_management.service.report_service import ReportService
 from unit_management.controller.camera_controller import get_all_camera
 import cv2
 import yt_dlp as youtube_dl
+import json
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
 router = APIRouter(
     prefix="/report",
@@ -59,13 +61,73 @@ async def create_report(
         image: UploadFile = File(None),
         unit_id: int = Form(...)
 ):
+    # Ruta al archivo de token
+    TOKEN_PATH = "token.json"
+
+    def get_oauth_token():
+        # Comprueba si ya tenemos un token de acceso
+        if os.path.exists(TOKEN_PATH):
+            with open(TOKEN_PATH, "r") as token_file:
+                creds_data = json.load(token_file)
+                creds = Credentials.from_authorized_user_info(creds_data)
+
+                # Verifica si el token aún es válido
+                if creds and creds.valid:
+                    return creds.token
+                elif creds and creds.expired and creds.refresh_token:
+                    # Si está expirado, utiliza el refresh token para renovarlo
+                    creds.refresh(Request())  # Usa el Request de google.auth.transport.requests
+                    save_token(creds)
+                    return creds.token
+
+        # Si no tenemos un token o ha caducado sin posibilidad de renovación, solicita uno nuevo
+        creds = authorize_and_save_token()
+        return creds.token
+
+    def authorize_and_save_token():
+        client_config = {
+            "installed": {
+                "client_id": os.getenv("CLIENT_ID"),
+                "project_id": os.getenv("PROJECT_ID"),
+                "auth_uri": os.getenv("AUTH_URI"),
+                "token_uri": os.getenv("TOKEN_URI"),
+                "auth_provider_x509_cert_url": os.getenv("AUTH_PROVIDER_X509_CERT_URL"),
+                "client_secret": os.getenv("CLIENT_SECRET"),
+                "redirect_uris": [os.getenv("DATA_URL"),]
+            }
+        }
+
+        scopes = ["https://www.googleapis.com/auth/youtube"]
+        flow = InstalledAppFlow.from_client_config(client_config, scopes=scopes)
+        creds = flow.run_local_server(port=0)
+
+        # Guarda el token y el refresh token
+        save_token(creds)
+        return creds
+
+    def save_token(creds):
+        # Guarda el token y el refresh token en un archivo
+        token_data = {
+            "token": creds.token,
+            "refresh_token": creds.refresh_token,
+            "token_uri": creds.token_uri,
+            "client_id": creds.client_id,
+            "client_secret": creds.client_secret,
+            "scopes": creds.scopes
+        }
+        with open(TOKEN_PATH, "w") as token_file:
+            json.dump(token_data, token_file)
+
+    # Ejemplo de uso en una función de transmisión en YouTube
     def youtube_stream(current_view):
         youtube_url = current_view
+        oauth_token = get_oauth_token()
 
-        # Configuración para seleccionar la calidad en 480p o la mejor calidad inferior disponible
         ydl_opts = {
-            'format': 'best[height<=480]/best',  # 480p o la mejor calidad inferior posible
+            'format': 'best[height<=480]/best',
+            'oauth_token': oauth_token
         }
+
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(youtube_url, download=False)
             live_url = info['url']
@@ -92,24 +154,19 @@ async def create_report(
             {camera.url for camera in cameras if camera.unitId == unit_id}
         )
 
-        print("Url listed")
         # Capturar la transmisión de video
         cap = link_check(unit_cameras[0])
         ret, frame = cap.read()  # Leer el fotograma de la cámara
         cap.release()
 
-        print("Ret")
         # Verificar si se capturó el fotograma correctamente
         if not ret:
             raise HTTPException(status_code=400, detail="No se pudo capturar la imagen desde la transmisión.")
 
-        print("Convertir")
         # Convertir el fotograma al formato RGB y guardarlo en un archivo temporal en memoria
         _, buffer = cv2.imencode('.jpg', frame)
         image_data = io.BytesIO(buffer.tobytes())
         image_data.name = "boton_panico.jpg"
-
-        print("Boton panico")
 
         # Crear un objeto UploadFile desde el archivo en memoria
         image = UploadFile(
@@ -117,7 +174,6 @@ async def create_report(
             file=image_data
         )
 
-    print("Imagen data")
     # Lee los datos de la imagen
     image_data = await image.read()
 
