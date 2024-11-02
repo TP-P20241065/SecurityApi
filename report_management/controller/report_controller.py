@@ -11,10 +11,8 @@ from report_management.service.report_service import ReportService
 from unit_management.controller.camera_controller import get_all_camera
 import cv2
 import yt_dlp as youtube_dl
-import json
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
 router = APIRouter(
     prefix="/report",
@@ -64,68 +62,21 @@ async def create_report(
     # Ruta al archivo de token
     TOKEN_PATH = "token.json"
 
-    def get_oauth_token():
-        # Comprueba si ya tenemos un token de acceso
-        if os.path.exists(TOKEN_PATH):
-            with open(TOKEN_PATH, "r") as token_file:
-                creds_data = json.load(token_file)
-                creds = Credentials.from_authorized_user_info(creds_data)
+    def youtube_service():
+        # Carga las credenciales de la cuenta de servicio
+        credentials = service_account.Credentials.from_service_account_file(
+            TOKEN_PATH,
+            scopes=["https://www.googleapis.com/auth/youtube.force-ssl"]
+        )
+        # Crea el servicio de YouTube API
+        service = build("youtube", "v3", credentials=credentials)
+        return service
 
-                # Verifica si el token aún es válido
-                if creds and creds.valid:
-                    return creds.token
-                elif creds and creds.expired and creds.refresh_token:
-                    # Si está expirado, utiliza el refresh token para renovarlo
-                    creds.refresh(Request())  # Usa el Request de google.auth.transport.requests
-                    save_token(creds)
-                    return creds.token
-
-        # Si no tenemos un token o ha caducado sin posibilidad de renovación, solicita uno nuevo
-        creds = authorize_and_save_token()
-        return creds.token
-
-    def authorize_and_save_token():
-        client_config = {
-            "installed": {
-                "client_id": os.getenv("CLIENT_ID"),
-                "project_id": os.getenv("PROJECT_ID"),
-                "auth_uri": os.getenv("AUTH_URI"),
-                "token_uri": os.getenv("TOKEN_URI"),
-                "auth_provider_x509_cert_url": os.getenv("AUTH_PROVIDER_X509_CERT_URL"),
-                "client_secret": os.getenv("CLIENT_SECRET"),
-                "redirect_uris": [os.getenv("DATA_URL"),]
-            }
-        }
-
-        scopes = ["https://www.googleapis.com/auth/youtube"]
-        flow = InstalledAppFlow.from_client_config(client_config, scopes=scopes)
-        creds = flow.run_local_server(port=0)
-
-        # Guarda el token y el refresh token
-        save_token(creds)
-        return creds
-
-    def save_token(creds):
-        # Guarda el token y el refresh token en un archivo
-        token_data = {
-            "token": creds.token,
-            "refresh_token": creds.refresh_token,
-            "token_uri": creds.token_uri,
-            "client_id": creds.client_id,
-            "client_secret": creds.client_secret,
-            "scopes": creds.scopes
-        }
-        with open(TOKEN_PATH, "w") as token_file:
-            json.dump(token_data, token_file)
-
-    # Ejemplo de uso en una función de transmisión en YouTube
+    # Obtiene la URL de transmisión de un video de YouTube utilizando yt-dlp
     def youtube_stream(current_view):
         youtube_url = current_view
-        oauth_token = get_oauth_token()
-
         ydl_opts = {
-            'format': 'best[height<=480]/best',
-            'oauth_token': oauth_token
+            'format': 'best[height<=480]/best'
         }
 
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -134,13 +85,14 @@ async def create_report(
 
         return cv2.VideoCapture(live_url)
 
+    # Configuración para flujo de video IP o cámara local
     def ip_stream(current_view):
         return cv2.VideoCapture(current_view)
 
     def link_check(current_view):
-        if current_view == '0':
+        if current_view == "0":
             return cv2.VideoCapture(0)
-        elif 'youtube.com' in current_view or 'youtu.be' in current_view:
+        elif "youtube.com" in current_view or "youtu.be" in current_view:
             return youtube_stream(current_view)
         else:
             return ip_stream(current_view)
