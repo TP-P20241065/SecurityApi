@@ -1,5 +1,6 @@
 import io
-import os
+import cv2
+import yt_dlp as youtube_dl
 from typing import Optional
 
 from fastapi import APIRouter, Path, UploadFile, File, Form, HTTPException, Response
@@ -9,8 +10,6 @@ from shared.response.schema import ResponseSchema, ResponseSchema2
 from report_management.model.report import  ReportCreate
 from report_management.service.report_service import ReportService
 from unit_management.controller.camera_controller import get_all_camera
-import cv2
-import yt_dlp as youtube_dl
 
 router = APIRouter(
     prefix="/report",
@@ -57,14 +56,12 @@ async def create_report(
         image: UploadFile = File(None),
         unit_id: int = Form(...)
 ):
-    # Ruta al archivo de cookies exportadas desde el navegador
-    COOKIES_FILE_PATH = "cookies.txt"
 
     def youtube_stream(current_view):
         youtube_url = current_view
         ydl_opts = {
             'format': 'best[height<=480]/best',
-            'cookies': COOKIES_FILE_PATH  # Usa el archivo de cookies
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.89 Safari/537.36'
         }
 
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
