@@ -11,8 +11,6 @@ from report_management.service.report_service import ReportService
 from unit_management.controller.camera_controller import get_all_camera
 import cv2
 import yt_dlp as youtube_dl
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
 
 router = APIRouter(
     prefix="/report",
@@ -59,24 +57,14 @@ async def create_report(
         image: UploadFile = File(None),
         unit_id: int = Form(...)
 ):
-    # Ruta al archivo de token
-    TOKEN_PATH = "token.json"
+    # Ruta al archivo de cookies exportadas desde el navegador
+    COOKIES_FILE_PATH = "cookies.txt"
 
-    def youtube_service():
-        # Carga las credenciales de la cuenta de servicio
-        credentials = service_account.Credentials.from_service_account_file(
-            TOKEN_PATH,
-            scopes=["https://www.googleapis.com/auth/youtube.force-ssl"]
-        )
-        # Crea el servicio de YouTube API
-        service = build("youtube", "v3", credentials=credentials)
-        return service
-
-    # Obtiene la URL de transmisión de un video de YouTube utilizando yt-dlp
     def youtube_stream(current_view):
         youtube_url = current_view
         ydl_opts = {
-            'format': 'best[height<=480]/best'
+            'format': 'best[height<=480]/best',
+            'cookies': COOKIES_FILE_PATH  # Usa el archivo de cookies
         }
 
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -85,14 +73,13 @@ async def create_report(
 
         return cv2.VideoCapture(live_url)
 
-    # Configuración para flujo de video IP o cámara local
     def ip_stream(current_view):
         return cv2.VideoCapture(current_view)
 
     def link_check(current_view):
-        if current_view == "0":
+        if current_view == '0':
             return cv2.VideoCapture(0)
-        elif "youtube.com" in current_view or "youtu.be" in current_view:
+        elif 'youtube.com' in current_view or 'youtu.be' in current_view:
             return youtube_stream(current_view)
         else:
             return ip_stream(current_view)
