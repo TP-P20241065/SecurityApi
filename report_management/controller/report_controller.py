@@ -56,11 +56,11 @@ async def create_report(
         image: UploadFile = File(None),
         unit_id: int = Form(...)
 ):
-
     def youtube_stream(current_view):
         youtube_url = current_view
         ydl_opts = {
             'format': 'best[height<=480]/best',
+            'extractor_args': {'youtube': {'player_client': ['invidious']}},
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.89 Safari/537.36'
         }
 
