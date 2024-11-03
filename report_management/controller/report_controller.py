@@ -1,8 +1,10 @@
 import io
+import os
+
 import cv2
-import yt_dlp as youtube_dl
 from typing import Optional
 
+import numpy as np
 from fastapi import APIRouter, Path, UploadFile, File, Form, HTTPException, Response
 from starlette.responses import JSONResponse
 from shared.message.message_service import send_alert, send_mms
@@ -10,6 +12,7 @@ from shared.response.schema import ResponseSchema, ResponseSchema2
 from report_management.model.report import  ReportCreate
 from report_management.service.report_service import ReportService
 from unit_management.controller.camera_controller import get_all_camera
+import requests
 
 router = APIRouter(
     prefix="/report",
@@ -57,22 +60,24 @@ async def create_report(
         unit_id: int = Form(...)
 ):
     def youtube_stream(current_view):
-        youtube_url = current_view
-        if 'youtube.com' in current_view:
-            youtube_url = youtube_url.replace("youtube.com", "invidious.snopyta.org")
-        elif 'youtu.be/' in current_view:
-            youtube_url = youtube_url.replace("youtu.be/", "invidious.snopyta.org/watch?v=")
-        ydl_opts = {
-            'format': 'best[height<=480]/best',
-            'extractor_args': {'youtube': {'player_client': ['invidious']}},
-            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.89 Safari/537.36'
-        }
+        # Hacer la solicitud POST al backend en la URL proporcionada por BRIDGE_URL
+        response = requests.post(
+            os.getenv("BRIDGE_URL") + "/video",
+            params={'current_view': current_view},
+            headers={'Content-Type': 'application/json'}
+        )
 
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(youtube_url, download=False)
-            live_url = info['url']
+        # Verificar si la solicitud fue exitosa
+        response.raise_for_status()
 
-        return cv2.VideoCapture(live_url)
+        # Convertir la respuesta de bytes a un arreglo numpy
+        nparr = np.frombuffer(response.content, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if frame is None:
+            raise ValueError("No se pudo decodificar la imagen obtenida del backend")
+
+        return frame
 
     def ip_stream(current_view):
         return cv2.VideoCapture(current_view)
@@ -81,6 +86,7 @@ async def create_report(
         if current_view == '0':
             return cv2.VideoCapture(0)
         elif 'youtube.com' in current_view or 'youtu.be' in current_view:
+            # Llamar a youtube_stream y obtener directamente el fotograma
             return youtube_stream(current_view)
         else:
             return ip_stream(current_view)
@@ -96,14 +102,20 @@ async def create_report(
 
         # Capturar la transmisión de video
         cap = link_check(unit_cameras[0])
-        ret, frame = cap.read()  # Leer el fotograma de la cámara
-        cap.release()
+
+        if isinstance(cap, cv2.VideoCapture):
+            ret, frame = cap.read()  # Leer el fotograma de la cámara
+            cap.release()
+        else:
+            # cap es un fotograma directamente si es el resultado de youtube_stream
+            frame = cap  # ya es una imagen obtenida del backend
+            ret = frame is not None
 
         # Verificar si se capturó el fotograma correctamente
         if not ret:
             raise HTTPException(status_code=400, detail="No se pudo capturar la imagen desde la transmisión.")
 
-        # Convertir el fotograma al formato RGB y guardarlo en un archivo temporal en memoria
+        # Convertir el fotograma al formato JPG y guardarlo en un archivo temporal en memoria
         _, buffer = cv2.imencode('.jpg', frame)
         image_data = io.BytesIO(buffer.tobytes())
         image_data.name = "boton_panico.jpg"
