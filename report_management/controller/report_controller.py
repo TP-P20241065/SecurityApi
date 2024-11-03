@@ -57,7 +57,7 @@ async def create_report(
         unit_id: int = Form(...)
 ):
     def youtube_stream(current_view):
-        youtube_url = current_view
+        youtube_url = current_view.replace("youtube.com", "invidious.snopyta.org")
         ydl_opts = {
             'format': 'best[height<=480]/best',
             'extractor_args': {'youtube': {'player_client': ['invidious']}},
