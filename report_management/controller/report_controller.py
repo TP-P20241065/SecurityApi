@@ -57,7 +57,11 @@ async def create_report(
         unit_id: int = Form(...)
 ):
     def youtube_stream(current_view):
-        youtube_url = current_view.replace("youtube.com", "invidious.snopyta.org")
+        youtube_url = current_view
+        if 'youtube.com' in current_view:
+            youtube_url = youtube_url.replace("youtube.com", "invidious.snopyta.org")
+        elif 'youtu.be/' in current_view:
+            youtube_url = youtube_url.replace("youtu.be/", "invidious.snopyta.org/watch?v=")
         ydl_opts = {
             'format': 'best[height<=480]/best',
             'extractor_args': {'youtube': {'player_client': ['invidious']}},
