@@ -52,7 +52,10 @@ class UserRepository:
 
     @staticmethod
     async def get_user_by_username(username: str):
-        return await prisma_connection.prisma.user.find_first(where={"username": username})
+        lowercase_username = username.lower()
+        return await prisma_connection.prisma.user.find_first(
+            where={"username": {"equals": lowercase_username, "mode": "insensitive"}}
+        )
 
     @staticmethod
     async def get_filtered(isActive: bool):
